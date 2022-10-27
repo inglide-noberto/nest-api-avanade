@@ -7,6 +7,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "migrate:create": "typeorm migration:create", 
+    "migrate:run": "npm run typeorm  migration:run -- -d ./ormconfig.ts",
+    "typeorm": "typeorm-ts-node-esm",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
