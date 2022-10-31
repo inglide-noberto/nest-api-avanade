@@ -25,12 +25,12 @@ export class UsersController {
     // listar todos
     @Get()
     async findAll(){
-        this.usersService.findAll();
+       return  this.usersService.findAll();
     }
     //  listar um
     @Get(':id')
     async findOne(@Param('id') id: string){
-        this.usersService.findOne(id);
+      return  this.usersService.findOne(id);
     }
     // atualizar 
     @Patch(':id')
@@ -38,4 +38,8 @@ export class UsersController {
         return this.usersService.update(id, req);
     }
     // Deletar
+    @Delete(':id')
+    async remove(@Param('id') id: string){
+        return this.usersService.remove(id);
+    }
 }
