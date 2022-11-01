@@ -2,10 +2,14 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { users } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import * as bcrypt from 'bcrypt';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class UsersService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private emailService: EmailService
+    ) { }
 
     async getUserById(id: string) {
         const user = await this.prisma.users.findUnique({
@@ -29,7 +33,7 @@ export class UsersService {
         return user ? true : false;
     }
 
-    async crypto(password: string): Promise<string>{
+    async crypto(password: string): Promise<string> {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         return hashedPassword;
@@ -48,6 +52,12 @@ export class UsersService {
                     password: await this.crypto(password),
                 },
             });
+
+            if(await this.emailService.sendEmail(
+                email,'Bem vindo ao sistema', 'Seja muito bem vindo',{},
+            )){
+                console.log("Email enviado com sucesso");
+            }
 
             if (!user) {
                 throw new Error("Erro ao criar o usuário.");
@@ -78,28 +88,28 @@ export class UsersService {
                 id: Number(id),
             },
             data: {
-                name: name? name : user.name,
-                email: email? email: user.email,
+                name: name ? name : user.name,
+                email: email ? email : user.email,
                 // verificar se tem como fazer uma validação de senhas antigas pra senhas novas
-                password: password? await this.crypto(password): user.password,
+                password: password ? await this.crypto(password) : user.password,
             },
         });
         if (!updateUser) {
             throw new HttpException('Erro ao atualizar o usuário', HttpStatus.BAD_REQUEST,);
         }
-        return {msg:`Usuário ${id} atualizado com sucesso!`};
+        return { msg: `Usuário ${id} atualizado com sucesso!` };
     }
-    async remove(id: string): Promise<object>{
+    async remove(id: string): Promise<object> {
         const user = await this.getUserById(id);
 
         const deleteUser = await this.prisma.users.delete({
-            where:{
+            where: {
                 id: Number(id),
             },
         });
-        if(!deleteUser){
+        if (!deleteUser) {
             throw new HttpException('Erro ao deletar o usuário.', HttpStatus.BAD_REQUEST,);
         }
-        return {msg: `Usuário ${user.name} deletado com sucesso!`};
+        return { msg: `Usuário ${user.name} deletado com sucesso!` };
     }
 }
