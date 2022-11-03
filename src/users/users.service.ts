@@ -80,8 +80,17 @@ export class UsersService {
     }
     async update(id: string, req) {
         const user = await this.getUserById(id);
-        // extraindo as informações para alterar o usuario
+        // extraindo as informações para alterar o usario
         const { name, email, password } = req;
+        //verificando se o email ta disponivel
+        if(email){
+            const checkEmail = await this.prisma.users.findMany({
+                where: {
+                    AND: [{email: email}, {id: {not:Number(id)}}]
+                },
+            });
+        };
+
 
         const updateUser = await this.prisma.users.update({
             where: {
