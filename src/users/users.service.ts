@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { users } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import * as bcrypt from 'bcrypt';
-import { EmailService } from 'src/email/email.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class UsersService {
@@ -86,9 +86,15 @@ export class UsersService {
         if(email){
             const checkEmail = await this.prisma.users.findMany({
                 where: {
-                    AND: [{email: email}, {id: {not:Number(id)}}]
+                    AND: [{email: email}, {id: {not:Number(id)}}],
                 },
             });
+            if(checkEmail.length > 0){
+                throw new HttpException(
+                    'E-mail já está sendo utilizado.',
+                    HttpStatus.BAD_REQUEST,
+                )
+            }
         };
 
 
